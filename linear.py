@@ -1,10 +1,7 @@
 from functools import reduce
 
-def to_bin(n, digits=0):
-    return bin(n)[2:].rjust(digits, '0')
-
-def from_bin(s):
-    return int(s, 2)
+def to_bin(n, digits=4): return bin(n)[2:].rjust(digits, '0')
+def from_bin(s): return int(s, 2)
 
 class SBox():
     sub_mat = {
@@ -25,6 +22,7 @@ class SBox():
     def invert(cls, n):
         return to_bin(cls.inv_mat[from_bin(n)], 4)
 
+
 def xor(a, b):
     ''' xor two bit strings. '''
     assert len(a) == len(b)
@@ -34,12 +32,15 @@ def xor(a, b):
         return str(int(a != b))
     return ''.join(xor_char(c1, c2) for c1, c2 in zip(a, b))
 
+
 def relation_input(U, P):
     return (U[5], U[7], U[13], U[15], P[4], P[6], P[7])
 
-def find_the_bias(plaintexts, ciphertexts):
-    k58_guess = '0111'
-    k516_guess = '0110'
+
+def find_the_bias(plaintexts, ciphertexts, partial_key):
+    assert len(partial_key) == 2
+    k58_guess = partial_key[0]
+    k516_guess = partial_key[1]
 
     relation_holds_count = 0
     total = 0
@@ -59,10 +60,27 @@ def find_the_bias(plaintexts, ciphertexts):
             relation_holds_count += 1
     return abs(0.5 - (relation_holds_count / total))
 
+
+def find_best_key(plaintexts, ciphertexts):
+    max_bias = 0
+    for k8 in range(2**4):
+        for k16 in range(2**4):
+            key_guess = (to_bin(k8), to_bin(k16))
+            bias = find_the_bias(plaintexts, ciphertexts, key_guess)
+            if bias > max_bias:
+                max_bias = bias
+                best_key_guess = key_guess
+    return best_key_guess
+
+
 def main():
     with open('l_plain.txt') as pf, open('l_ciphers.txt') as cf:
-        bias = find_the_bias(pf, cf)
-        print('The bias is {}'.format(str(bias)))
+        plaintexts = list(map(str.strip, pf))
+        ciphertexts = list(map(str.strip, cf))
+    bias = find_the_bias(plaintexts, ciphertexts, ('0111', '0110'))
+    print('Question 2a: The bias is {}'.format(str(bias)))
+    best_key = find_best_key(plaintexts, ciphertexts)
+    print('Question 2b: The best key guess is {}'.format(best_key))
 
 
 if __name__ == '__main__':
