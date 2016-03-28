@@ -20,10 +20,12 @@ class Point():
             raise TypeError('Cannot add two points of different curves!')
 
         try:
-            if other.x is None and other.y is None:
+            if other.x == 0 and other.y == 0:
                 return Point(self.curve, self.x, self.y)
-            if self.x is None and self.y is None:
+            if self.x == 0 and self.y == 0:
                 return Point(self.curve, other.x, other.y)
+            if self.x == other.x and self.y == (-1 * other.y):
+                return Point(self.curve, 0, 0)
             if self == other:
                 m = (3 * (self.x * self.x) + self.curve.a) / (2 * self.y)
             else:
@@ -40,9 +42,9 @@ class Point():
             raise ValueError('{} is not an int'.format(str(n)))
 
         if n == 0:
-            return Point(self.curve, None, None)
+            return Point(self.curve, 0, 0)
         if n % 2 == 0:
-            Q = (n / 2) * self
+            Q = (n >> 1) * self
             return Q + Q
         else:
             return ((n - 1) * self) + self
@@ -55,7 +57,7 @@ class EllipticCurve():
         self.gf = gf
 
     def __eq__(self, o):
-        return isinstance(o, ECC) and o.a == self.a and o.b == self.b
+        return isinstance(o, EllipticCurve) and o.a == self.a and o.b == self.b
 
     def pt(self, x, y):
         return Point(self, self.gf(x), self.gf(y))

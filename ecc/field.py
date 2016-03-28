@@ -7,9 +7,16 @@ class ModularNumber():
         return str(self.value)
 
     def __eq__(self, other):
+        if isinstance(other, int):
+            return self.value == other
         return (isinstance(other, ModularNumber) and
                 self.gf == other.gf and
                 self.value == other.value)
+
+    def __gt__(self, other):
+        if isinstance(other, int):
+            return self.value > other
+        return self.value > other.value
 
     def __add__(self,  other):
         if isinstance(other, int):
@@ -55,7 +62,7 @@ class ModularNumber():
             (t, new_t) = (new_t, t - quotient * new_t)
             (r, new_r) = (new_r, r - quotient * new_r)
         if r > 1:
-            raise ValueError('No inverse')
+            raise ValueError('No inverse for {} mod {}'.format(num.value, num.gf.size))
         if t < 0:
             t += num.gf.size
         return ModularNumber(num.gf, t)
